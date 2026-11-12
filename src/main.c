@@ -4,12 +4,12 @@
 #define PIN 17
 
 
-void display_count(int count) {
+void display_count(int count, int max_count) {
     printf("Current Occupancy Count: %d\n", count);
     printf("Occupancy Status: %s\n", (count < max_count) ? "Available" : "Full");
     //Prevents the occupancy count from exceeding the maximum count, and activates LED if the room is full
     if (count >= max_count) {
-        printf("Warning: The study room is at full capacity!\n");
+        printf("\nWARNING: The study room is at full capacity!\n");
         gpioWrite(17, 1);
     }
     else {
@@ -26,10 +26,13 @@ void display_count(int count) {
 }
 
 int main() {
+    gpioInitialise();
+    gpioSetMode(PIN, PI_OUTPUT);
     //Initialize variables here
     int count = 0;
     int max_count = 0;
     int running = 1;
+    
 
     printf("Welcome to the Study Room Tracker!\n");
     printf("Please enter the maximum occupancy count for the study room: ");
@@ -38,17 +41,20 @@ int main() {
     //Main loop to track occupancy
     while (running == 1) {
         //Display current occupancy count
-        display_count(count);
+        display_count(count, max_count);
 
         //Function to allow user to add or remove occupants
-        printf("Enter 1 to add an occupant, 2 to remove an occupant, or 0 to exit: ");
+        printf("Enter 1 to add an occupant, 2 to remove an occupant, 3 to change room maximum, or 0 to exit: ");
         int choice;
         scanf("%d", &choice);
         if (choice == 1) {
             count++;
         } else if (choice == 2) {
             count--;
-        } else if (choice == 0) {
+        }else if (choice == 3) { 
+            printf("Please enter the maximum occupancy count for the study room: ");
+            scanf("%d", &max_count);
+        }else if (choice == 0) {
             running = 0;
             printf("Exiting the Study Room Tracker. Goodbye!\n");
             break;
@@ -58,12 +64,10 @@ int main() {
         }
 
         //Prevent occupancy from going below zero
-        else if (count <= 0) {
+        if (count <= 0) {
             printf("The study room is empty. No occupants can leave.\n");
             count = 0;
         } 
-        
-        display_count(count);
     }
 
     return 0;
